@@ -26,18 +26,18 @@ import (
 	"io"
 	"time"
 
+	"github.com/m3db/m3/src/cluster/kv"
 	"github.com/m3db/m3/src/dbnode/encoding"
 	"github.com/m3db/m3/src/dbnode/encoding/m3tsz"
 	"github.com/m3db/m3/src/dbnode/environment"
+	"github.com/m3db/m3/src/dbnode/namespace"
+	"github.com/m3db/m3/src/dbnode/namespace/kvadmin"
 	"github.com/m3db/m3/src/dbnode/topology"
 	xtchannel "github.com/m3db/m3/src/dbnode/x/tchannel"
+	xerrors "github.com/m3db/m3/src/x/errors"
+	"github.com/m3db/m3/src/x/ident"
 	"github.com/m3db/m3/src/x/instrument"
 	"github.com/m3db/m3/src/x/retry"
-	"github.com/m3db/m3/src/dbnode/namespace"
-	"github.com/m3db/m3/src/x/ident"
-	xerrors "github.com/m3db/m3/src/x/errors"
-	"github.com/m3db/m3/src/cluster/kv"
-	"github.com/m3db/m3/src/dbnode/namespace/kvadmin"
 )
 
 var (
@@ -92,7 +92,7 @@ type Configuration struct {
 // ProtoConfiguration is the configuration for running with ProtoDataMode enabled.
 type ProtoConfiguration struct {
 	// Enabled specifies whether proto is enabled.
-	Enabled bool `yaml:"enabled"`
+	Enabled  bool `yaml:"enabled"`
 	TestOnly bool `yaml:"testOnly"`
 	// load user schema from client configuration into schema registry
 	// at startup/initialization time.
