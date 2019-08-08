@@ -25,7 +25,7 @@ import (
 	"testing"
 
 	"github.com/m3db/m3/src/x/pool"
-	"github.com/m3db/m3/src/x/test"
+	"github.com/m3db/m3/src/x/test/testmarshal"
 
 	"github.com/stretchr/testify/require"
 	yaml "gopkg.in/yaml.v2"
@@ -157,7 +157,7 @@ func TestTypesMarshalRoundTrip(t *testing.T) {
 		{Mean, Max, P99, P9999},
 	}
 
-	test.TestMarshallersRoundtrip(t, inputs, []test.Marshaller{test.JSONMarshaller, test.YAMLMarshaller})
+	testmarshal.TestMarshalersRoundtrip(t, inputs, []testmarshal.Marshaler{testmarshal.JSONMarshaler, testmarshal.YAMLMarshaler})
 }
 
 func TestTypesUnmarshalYAML(t *testing.T) {

@@ -95,6 +95,7 @@ func (p *DropPolicy) UnmarshalText(data []byte) error {
 	return nil
 }
 
+// MarshalText marshals a drop policy to a string.
 func (p DropPolicy) MarshalText() ([]byte, error) {
 	return []byte(p.String()), nil
 }

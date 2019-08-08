@@ -27,7 +27,7 @@ import (
 	"github.com/m3db/m3/src/metrics/aggregation"
 	"github.com/m3db/m3/src/metrics/generated/proto/aggregationpb"
 	"github.com/m3db/m3/src/metrics/generated/proto/policypb"
-	"github.com/m3db/m3/src/x/test"
+	"github.com/m3db/m3/src/x/test/testmarshal"
 	xtime "github.com/m3db/m3/src/x/time"
 
 	"github.com/stretchr/testify/require"
@@ -89,7 +89,7 @@ func TestPolicyMarshalling(t *testing.T) {
 			examples = append(examples, ex.expected)
 		}
 
-		test.TestMarshallersRoundtrip(t, examples, []test.Marshaller{test.TextMarshaller, test.JSONMarshaller, test.YAMLMarshaller})
+		testmarshal.TestMarshalersRoundtrip(t, examples, []testmarshal.Marshaler{testmarshal.TextMarshaler, testmarshal.JSONMarshaler, testmarshal.YAMLMarshaler})
 	})
 
 	t.Run("marshals/text", func(t *testing.T) {
@@ -97,19 +97,19 @@ func TestPolicyMarshalling(t *testing.T) {
 			if input.notCanonical {
 				continue
 			}
-			test.Require(t, test.AssertMarshals(t, test.TextMarshaller, input.expected, []byte(input.str)))
+			testmarshal.Require(t, testmarshal.AssertMarshals(t, testmarshal.TextMarshaler, input.expected, []byte(input.str)))
 		}
 	})
 
 	t.Run("unmarshals/text", func(t *testing.T) {
 		for _, input := range inputs {
-			test.Require(t, test.AssertUnmarshals(t, test.TextMarshaller, input.expected, []byte(input.str)))
+			testmarshal.Require(t, testmarshal.AssertUnmarshals(t, testmarshal.TextMarshaler, input.expected, []byte(input.str)))
 		}
 	})
 
 	t.Run("unmarshals/yaml", func(t *testing.T) {
 		for _, input := range inputs {
-			test.Require(t, test.AssertUnmarshals(t, test.YAMLMarshaller, input.expected, []byte(input.str)))
+			testmarshal.Require(t, testmarshal.AssertUnmarshals(t, testmarshal.YAMLMarshaler, input.expected, []byte(input.str)))
 		}
 	})
 }

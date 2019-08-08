@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-package test
+package testmarshal
 
 import (
 	"encoding"
@@ -31,26 +31,36 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type Marshaller interface {
+// Marshaler represents a serialization protocol, e.g. JSON or YAML
+type Marshaler interface {
+	// Marshal converts a Go type into bytes
 	Marshal(interface{}) ([]byte, error)
+
+	// Unmarshal converts bytes into a Go type.
 	Unmarshal([]byte, interface{}) error
+
+	// ID identifies the protocol, mostly for use in test naming.
 	ID() string
 }
 
 var (
-	JSONMarshaller Marshaller = simpleMarshaller{
+	// JSONMarshaler uses the encoding/json package to marshal types
+	JSONMarshaler Marshaler = simpleMarshaler{
 		id:        "json",
 		marshal:   json.Marshal,
 		unmarshal: json.Unmarshal,
 	}
 
-	YAMLMarshaller Marshaller = simpleMarshaller{
+	// YAMLMarshaler uses the gopkg.in/yaml.v2 package to marshal types
+	YAMLMarshaler Marshaler = simpleMarshaler{
 		id:        "yaml",
 		marshal:   yaml.Marshal,
 		unmarshal: yaml.Unmarshal,
 	}
 
-	TextMarshaller Marshaller = simpleMarshaller{
+	// TextMarshaler marshals types which implement both encoding.TextMarshaler
+	// and encoding.TextUnmarshaler
+	TextMarshaler Marshaler = simpleMarshaler{
 		id: "text",
 		marshal: func(i interface{}) ([]byte, error) {
 			switch m := i.(type) {
@@ -71,38 +81,42 @@ var (
 	}
 )
 
-type simpleMarshaller struct {
+type simpleMarshaler struct {
 	marshal   func(interface{}) ([]byte, error)
 	unmarshal func([]byte, interface{}) error
 	id        string
 }
 
-func (sm simpleMarshaller) Marshal(v interface{}) ([]byte, error) {
+func (sm simpleMarshaler) Marshal(v interface{}) ([]byte, error) {
 	return sm.marshal(v)
 }
 
-func (sm simpleMarshaller) Unmarshal(d []byte, v interface{}) error {
+func (sm simpleMarshaler) Unmarshal(d []byte, v interface{}) error {
 	return sm.unmarshal(d, v)
 }
 
-func (sm simpleMarshaller) ID() string {
+func (sm simpleMarshaler) ID() string {
 	return sm.id
 }
 
-func AssertMarshallingRoundtrips(t *testing.T, marshaller Marshaller, v interface{}) bool {
-	d, err := marshaller.Marshal(v)
+// AssertMarshalingRoundtrips checks that the "roundtrips" example i.e.:
+// // marshaler.Unmarshal(marshaler.Marshal(example)) == example.
+func AssertMarshalingRoundtrips(t *testing.T, marshaller Marshaler, example interface{}) bool {
+	d, err := marshaller.Marshal(example)
 	if !assert.NoError(t, err) {
 		return false
 	}
-	reconstituted, err := unmarshalIntoNewValueOfType(marshaller, v, d)
+	reconstituted, err := unmarshalIntoNewValueOfType(marshaller, example, d)
 	if !assert.NoError(t, err) {
 		return false
 	}
 
-	return assert.Equal(t, v, reconstituted)
+	return assert.Equal(t, example, reconstituted)
 }
 
-func AssertUnmarshals(t *testing.T, marshaller Marshaller, expected interface{}, data []byte) bool {
+// AssertUnmarshals checks that the given data successfully unmarshals into a
+// value which assert.Equal's expected.
+func AssertUnmarshals(t *testing.T, marshaller Marshaler, expected interface{}, data []byte) bool {
 	unmarshalled, err := unmarshalIntoNewValueOfType(marshaller, expected, data)
 	if !assert.NoError(t, err) {
 		return false
@@ -111,7 +125,9 @@ func AssertUnmarshals(t *testing.T, marshaller Marshaller, expected interface{},
 	return assert.Equal(t, expected, unmarshalled)
 }
 
-func AssertMarshals(t *testing.T, marshaller Marshaller, toMarshal interface{}, expectedData []byte) bool {
+// AssertMarshals checks that the given value marshals into data equal
+// to expectedData.
+func AssertMarshals(t *testing.T, marshaller Marshaler, toMarshal interface{}, expectedData []byte) bool {
 	marshalled, err := marshaller.Marshal(toMarshal)
 	if !assert.NoError(t, err) {
 		return false
@@ -122,7 +138,7 @@ func AssertMarshals(t *testing.T, marshaller Marshaller, toMarshal interface{}, 
 
 // unmarshalIntoNewValueOfType is a helper to unmarshal a new instance of the same type as value
 // from data.
-func unmarshalIntoNewValueOfType(marshaller Marshaller, value interface{}, data []byte) (interface{}, error) {
+func unmarshalIntoNewValueOfType(marshaller Marshaler, value interface{}, data []byte) (interface{}, error) {
 	ptrToUnmarshalTarget := reflect.New(reflect.ValueOf(value).Type())
 	unmarshalTarget := ptrToUnmarshalTarget.Elem()
 	if err := marshaller.Unmarshal(data, ptrToUnmarshalTarget.Interface()); err != nil {
@@ -131,14 +147,19 @@ func unmarshalIntoNewValueOfType(marshaller Marshaller, value interface{}, data 
 	return unmarshalTarget.Interface(), nil
 }
 
-// Require wraps an Assert call and turns it into a require.
+// Require wraps an Assert call and turns it into a require.* call (fails if
+// the assert fails).
 func Require(t *testing.T, b bool) {
 	if !b {
 		t.FailNow()
 	}
 }
 
-func TestMarshallersRoundtrip(t *testing.T, examples interface{}, marshallers []Marshaller) {
+// TestMarshalersRoundtrip is a helper which runs a test for each provided marshaller
+// on each example in examples (a slice of any type). The test checks that the
+// marshaler "roundtrips" for each example, i.e.:
+// marshaler.Unmarshal(marshaler.Marshal(example)) == example.
+func TestMarshalersRoundtrip(t *testing.T, examples interface{}, marshallers []Marshaler) {
 	for _, m := range marshallers {
 		t.Run(m.ID(), func(t *testing.T) {
 			v := reflect.ValueOf(examples)
@@ -149,7 +170,7 @@ func TestMarshallersRoundtrip(t *testing.T, examples interface{}, marshallers []
 			// taken from https://stackoverflow.com/questions/14025833/range-over-interface-which-stores-a-slice
 			for i := 0; i < v.Len(); i++ {
 				example := v.Index(i).Interface()
-				Require(t, AssertMarshallingRoundtrips(t, m, example))
+				Require(t, AssertMarshalingRoundtrips(t, m, example))
 			}
 		})
 

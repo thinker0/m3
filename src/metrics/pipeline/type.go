@@ -156,10 +156,12 @@ func (op *TransformationOp) FromProto(pb *pipelinepb.TransformationOp) error {
 	return op.Type.FromProto(pb.Type)
 }
 
+// UnmarshalText extracts this type from its textual representation.
 func (op *TransformationOp) UnmarshalText(text []byte) error {
 	return op.Type.UnmarshalText(text)
 }
 
+// MarshalText serializes this type to its textual representation.
 func (op TransformationOp) MarshalText() (text []byte, err error) {
 	return op.Type.MarshalText()
 }
@@ -295,6 +297,7 @@ func (op *RollupOp) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
+// MarshalYAML returns the YAML representation of this type.
 func (op RollupOp) MarshalYAML() (interface{}, error) {
 	return newRollupMarshaler(op), nil
 }
@@ -612,6 +615,7 @@ func (p *Pipeline) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	return nil
 }
 
+// MarshalYAML returns the YAML representation.
 func (p Pipeline) MarshalYAML() (interface{}, error) {
 	return p.operations, nil
 }

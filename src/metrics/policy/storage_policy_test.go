@@ -27,7 +27,7 @@ import (
 	"time"
 
 	"github.com/m3db/m3/src/metrics/generated/proto/policypb"
-	"github.com/m3db/m3/src/x/test"
+	"github.com/m3db/m3/src/x/test/testmarshal"
 	xtime "github.com/m3db/m3/src/x/time"
 
 	"github.com/stretchr/testify/require"
@@ -493,7 +493,7 @@ func TestStoragePoliciesRoundtrip(t *testing.T) {
 		NewStoragePolicy(time.Minute, xtime.Minute, 24*time.Hour),
 	}
 
-	test.TestMarshallersRoundtrip(t, []StoragePolicies{input}, []test.Marshaller{test.JSONMarshaller, test.YAMLMarshaller})
+	testmarshal.TestMarshalersRoundtrip(t, []StoragePolicies{input}, []testmarshal.Marshaler{testmarshal.JSONMarshaler, testmarshal.YAMLMarshaler})
 }
 
 func TestStoragePoliciesByResolutionAscRetentionDesc(t *testing.T) {

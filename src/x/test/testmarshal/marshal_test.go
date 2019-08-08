@@ -18,14 +18,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-package test
+package testmarshal
 
 import (
 	"fmt"
 	"testing"
 )
 
-func TestFoo(t *testing.T) {
+func TestMarshallingAssertMethods(t *testing.T) {
 	cases := []struct {
 		Name         string
 		Serialized   map[string][]byte
@@ -42,13 +42,13 @@ func TestFoo(t *testing.T) {
 
 	marshallers := []struct {
 		Name       string
-		Marshaller Marshaller
+		Marshaller Marshaler
 	}{{
 		Name:       "json",
-		Marshaller: JSONMarshaller,
+		Marshaller: JSONMarshaler,
 	}, {
 		Name:       "yaml",
-		Marshaller: YAMLMarshaller,
+		Marshaller: YAMLMarshaler,
 	}}
 
 	for _, tc := range cases {
@@ -62,7 +62,7 @@ func TestFoo(t *testing.T) {
 			t.Run(fmt.Sprintf("%s/%s", tc.Name, marshaller.Name), func(t *testing.T) {
 				AssertMarshals(t, marshaller.Marshaller, tc.Deserialized, serialized)
 				AssertUnmarshals(t, marshaller.Marshaller, tc.Deserialized, serialized)
-				AssertMarshallingRoundtrips(t, marshaller.Marshaller, serialized)
+				AssertMarshalingRoundtrips(t, marshaller.Marshaller, serialized)
 			})
 		}
 	}

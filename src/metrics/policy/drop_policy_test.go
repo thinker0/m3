@@ -25,7 +25,7 @@ import (
 	"math"
 	"testing"
 
-	"github.com/m3db/m3/src/x/test"
+	"github.com/m3db/m3/src/x/test/testmarshal"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/yaml.v2"
@@ -87,12 +87,12 @@ func TestDropPolicyMarshalling(t *testing.T) {
 	}
 
 	t.Run("roundtrips", func(t *testing.T) {
-		test.TestMarshallersRoundtrip(t, examples, []test.Marshaller{test.YAMLMarshaller, test.JSONMarshaller, test.TextMarshaller})
+		testmarshal.TestMarshalersRoundtrip(t, examples, []testmarshal.Marshaler{testmarshal.YAMLMarshaler, testmarshal.JSONMarshaler, testmarshal.TextMarshaler})
 	})
 
 	t.Run("yaml/unmarshals", func(t *testing.T) {
 		for _, input := range inputs {
-			test.Require(t, test.AssertUnmarshals(t, test.YAMLMarshaller, input.expected, []byte(input.str)))
+			testmarshal.Require(t, testmarshal.AssertUnmarshals(t, testmarshal.YAMLMarshaler, input.expected, []byte(input.str)))
 		}
 	})
 }

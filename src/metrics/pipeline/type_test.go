@@ -29,7 +29,7 @@ import (
 	"github.com/m3db/m3/src/metrics/generated/proto/transformationpb"
 	"github.com/m3db/m3/src/metrics/transformation"
 	"github.com/m3db/m3/src/metrics/x/bytes"
-	"github.com/m3db/m3/src/x/test"
+	"github.com/m3db/m3/src/x/test/testmarshal"
 
 	"github.com/stretchr/testify/require"
 	yaml "gopkg.in/yaml.v2"
@@ -75,7 +75,7 @@ func TestAggregationOpMarshalling(t *testing.T) {
 	examples := []AggregationOp{{aggregation.Count}}
 
 	t.Run("roundtrips", func(t *testing.T) {
-		test.TestMarshallersRoundtrip(t, examples, []test.Marshaller{test.JSONMarshaller, test.YAMLMarshaller, test.TextMarshaller})
+		testmarshal.TestMarshalersRoundtrip(t, examples, []testmarshal.Marshaler{testmarshal.JSONMarshaler, testmarshal.YAMLMarshaler, testmarshal.TextMarshaler})
 	})
 
 	t.Run("marshals", func(t *testing.T) {
@@ -83,21 +83,32 @@ func TestAggregationOpMarshalling(t *testing.T) {
 			Example AggregationOp
 			YAML    string
 			JSON    string
+			Text    string
 		}{{
 			Example: AggregationOp{aggregation.Count},
-			JSON:    `"Count"`,
-			YAML:    "Count\n",
+
+			Text: "Count",
+			JSON: `"Count"`,
+			YAML: "Count\n",
 		}}
+
+		t.Run("text", func(t *testing.T) {
+			for _, tc := range cases {
+				testmarshal.Require(t, testmarshal.AssertUnmarshals(t, testmarshal.TextMarshaler, tc.Example, []byte(tc.Text)))
+				testmarshal.Require(t, testmarshal.AssertMarshals(t, testmarshal.TextMarshaler, tc.Example, []byte(tc.Text)))
+			}
+		})
 
 		t.Run("json", func(t *testing.T) {
 			for _, tc := range cases {
-				test.Require(t, test.AssertMarshals(t, test.JSONMarshaller, tc.Example, []byte(tc.JSON)))
+				testmarshal.Require(t, testmarshal.AssertUnmarshals(t, testmarshal.JSONMarshaler, tc.Example, []byte(tc.JSON)))
+				testmarshal.Require(t, testmarshal.AssertMarshals(t, testmarshal.JSONMarshaler, tc.Example, []byte(tc.JSON)))
 			}
 		})
 
 		t.Run("yaml", func(t *testing.T) {
 			for _, tc := range cases {
-				test.Require(t, test.AssertMarshals(t, test.YAMLMarshaller, tc.Example, []byte(tc.YAML)))
+				testmarshal.Require(t, testmarshal.AssertMarshals(t, testmarshal.YAMLMarshaler, tc.Example, []byte(tc.YAML)))
 			}
 		})
 	})
@@ -339,7 +350,7 @@ func TestOpUnionMarshalRoundtrip(t *testing.T) {
 		},
 	}
 
-	test.TestMarshallersRoundtrip(t, ops, []test.Marshaller{test.JSONMarshaller, test.YAMLMarshaller})
+	testmarshal.TestMarshalersRoundtrip(t, ops, []testmarshal.Marshaler{testmarshal.JSONMarshaler, testmarshal.YAMLMarshaler})
 }
 
 func TestPipelineMarshalJSON(t *testing.T) {
@@ -407,7 +418,7 @@ func TestPipelineMarshalRoundtrip(t *testing.T) {
 		},
 	})
 
-	test.TestMarshallersRoundtrip(t, []Pipeline{p}, []test.Marshaller{test.YAMLMarshaller, test.JSONMarshaller})
+	testmarshal.TestMarshalersRoundtrip(t, []Pipeline{p}, []testmarshal.Marshaler{testmarshal.YAMLMarshaler, testmarshal.JSONMarshaler})
 }
 
 func TestPipelineUnmarshalYAML(t *testing.T) {
