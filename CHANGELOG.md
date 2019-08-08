@@ -17,6 +17,10 @@ If you run into any issues with the upgrade or need to downgrade to a previous v
 3. Modify the `bootstrappers` config in the M3DB YAML file from `filesystem, commitlog, peers, uninitialized_topology` to `filesystem, peers, commitlog, uninitialized_topology`. This will force the node to bootstrap from its peers instead of the local snapshot and commitlog files it has on disk, which is important otherwise when the node restarts, it will think that it has already been bootstrapped.
 4. Turn the node back on.
 
+
+## Bug Fixes
+- FIX **m3aggregator:** Make YAML serialization roundtrip for config related types (#PR_NUMBER)
+
 # 0.10.2
 
 ## Performance
