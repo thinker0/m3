@@ -29,6 +29,7 @@ import (
 	"github.com/m3db/m3/src/metrics/generated/proto/transformationpb"
 	"github.com/m3db/m3/src/metrics/transformation"
 	"github.com/m3db/m3/src/metrics/x/bytes"
+	"github.com/m3db/m3/src/x/test"
 
 	"github.com/stretchr/testify/require"
 	yaml "gopkg.in/yaml.v2"
@@ -68,6 +69,38 @@ func TestAggregationOpEqual(t *testing.T) {
 		require.Equal(t, input.expected, input.a1.Equal(input.a2))
 		require.Equal(t, input.expected, input.a2.Equal(input.a1))
 	}
+}
+
+func TestAggregationOpMarshalling(t *testing.T) {
+	examples := []AggregationOp{{aggregation.Count}}
+
+	t.Run("roundtrips", func(t *testing.T) {
+		test.TestMarshallersRoundtrip(t, examples, []test.Marshaller{test.JSONMarshaller, test.YAMLMarshaller, test.TextMarshaller})
+	})
+
+	t.Run("marshals", func(t *testing.T) {
+		cases := []struct {
+			Example AggregationOp
+			YAML    string
+			JSON    string
+		}{{
+			Example: AggregationOp{aggregation.Count},
+			JSON:    `"Count"`,
+			YAML:    "Count\n",
+		}}
+
+		t.Run("json", func(t *testing.T) {
+			for _, tc := range cases {
+				test.Require(t, test.AssertMarshals(t, test.JSONMarshaller, tc.Example, []byte(tc.JSON)))
+			}
+		})
+
+		t.Run("yaml", func(t *testing.T) {
+			for _, tc := range cases {
+				test.Require(t, test.AssertMarshals(t, test.YAMLMarshaller, tc.Example, []byte(tc.YAML)))
+			}
+		})
+	})
 }
 
 func TestTransformationOpEqual(t *testing.T) {
@@ -278,7 +311,7 @@ func TestOpUnionMarshalJSONError(t *testing.T) {
 	require.Error(t, err)
 }
 
-func TestOpUnionMarshalJSONRoundtrip(t *testing.T) {
+func TestOpUnionMarshalRoundtrip(t *testing.T) {
 	ops := []OpUnion{
 		{
 			Type:        AggregationOpType,
@@ -306,13 +339,7 @@ func TestOpUnionMarshalJSONRoundtrip(t *testing.T) {
 		},
 	}
 
-	for _, op := range ops {
-		b, err := json.Marshal(op)
-		require.NoError(t, err)
-		var res OpUnion
-		require.NoError(t, json.Unmarshal(b, &res))
-		require.Equal(t, op, res)
-	}
+	test.TestMarshallersRoundtrip(t, ops, []test.Marshaller{test.JSONMarshaller, test.YAMLMarshaller})
 }
 
 func TestPipelineMarshalJSON(t *testing.T) {
@@ -352,7 +379,7 @@ func TestPipelineMarshalJSON(t *testing.T) {
 	require.Equal(t, expected, string(b))
 }
 
-func TestPipelineMarshalJSONRoundtrip(t *testing.T) {
+func TestPipelineMarshalRoundtrip(t *testing.T) {
 	p := NewPipeline([]OpUnion{
 		{
 			Type:        AggregationOpType,
@@ -379,11 +406,8 @@ func TestPipelineMarshalJSONRoundtrip(t *testing.T) {
 			},
 		},
 	})
-	b, err := json.Marshal(p)
-	require.NoError(t, err)
-	var res Pipeline
-	require.NoError(t, json.Unmarshal(b, &res))
-	require.Equal(t, p, res)
+
+	test.TestMarshallersRoundtrip(t, []Pipeline{p}, []test.Marshaller{test.YAMLMarshaller, test.JSONMarshaller})
 }
 
 func TestPipelineUnmarshalYAML(t *testing.T) {

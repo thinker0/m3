@@ -27,6 +27,7 @@ import (
 	"time"
 
 	"github.com/m3db/m3/src/metrics/generated/proto/policypb"
+	"github.com/m3db/m3/src/x/test"
 	xtime "github.com/m3db/m3/src/x/time"
 
 	"github.com/stretchr/testify/require"
@@ -485,17 +486,14 @@ func TestStoragePoliciesJSONUnMarshal(t *testing.T) {
 	require.Equal(t, expected, storagePolicies)
 }
 
-func TestStoragePoliciesJSONRoundtrip(t *testing.T) {
+func TestStoragePoliciesRoundtrip(t *testing.T) {
 	input := StoragePolicies{
 		NewStoragePolicy(time.Second, xtime.Second, time.Hour),
 		NewStoragePolicy(10*time.Second, xtime.Second, 24*time.Hour),
 		NewStoragePolicy(time.Minute, xtime.Minute, 24*time.Hour),
 	}
-	b, err := json.Marshal(input)
-	require.NoError(t, err)
-	var storagePolicies StoragePolicies
-	require.NoError(t, json.Unmarshal([]byte(b), &storagePolicies))
-	require.Equal(t, input, storagePolicies)
+
+	test.TestMarshallersRoundtrip(t, []StoragePolicies{input}, []test.Marshaller{test.JSONMarshaller, test.YAMLMarshaller})
 }
 
 func TestStoragePoliciesByResolutionAscRetentionDesc(t *testing.T) {
