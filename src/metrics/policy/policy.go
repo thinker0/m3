@@ -22,7 +22,6 @@ package policy
 
 import (
 	"errors"
-	"strconv"
 	"strings"
 
 	"github.com/m3db/m3/src/metrics/aggregation"
@@ -105,34 +104,14 @@ func (p Policy) String() string {
 	return p.StoragePolicy.String() + policyAggregationTypeSeparator + p.AggregationID.String()
 }
 
-// MarshalJSON returns the JSON encoding of a policy.
-func (p Policy) MarshalJSON() ([]byte, error) {
-	marshalled := strconv.Quote(p.String())
-	return []byte(marshalled), nil
+// MarshalText returns the text encoding of a policy.
+func (p Policy) MarshalText() ([]byte, error) {
+	return []byte(p.String()), nil
 }
 
-// UnmarshalJSON unmarshals JSON-encoded data into a policy.
-func (p *Policy) UnmarshalJSON(data []byte) error {
+// UnmarshalText unmarshals text-encoded data into a policy.
+func (p *Policy) UnmarshalText(data []byte) error {
 	str := string(data)
-	unquoted, err := strconv.Unquote(str)
-	if err != nil {
-		return err
-	}
-	parsed, err := ParsePolicy(unquoted)
-	if err != nil {
-		return err
-	}
-	*p = parsed
-	return nil
-}
-
-// UnmarshalYAML unmarshals a policy value from a string.
-func (p *Policy) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var str string
-	if err := unmarshal(&str); err != nil {
-		return err
-	}
-
 	parsed, err := ParsePolicy(str)
 	if err != nil {
 		return err
@@ -202,37 +181,4 @@ func (p Policies) Equals(other Policies) bool {
 		}
 	}
 	return true
-}
-
-// UnmarshalYAML unmarshals a drop policy value from a string.
-func (p *DropPolicy) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var str string
-	if err := unmarshal(&str); err != nil {
-		return err
-	}
-
-	// Allow default string value (not specified) to mean default
-	if str == "" {
-		*p = DefaultDropPolicy
-		return nil
-	}
-
-	parsed, err := ParseDropPolicy(str)
-	if err != nil {
-		return err
-	}
-
-	*p = parsed
-	return nil
-}
-
-// ParseDropPolicy parses a drop policy.
-func ParseDropPolicy(str string) (DropPolicy, error) {
-	for _, valid := range validDropPolicies {
-		if valid.String() == str {
-			return valid, nil
-		}
-	}
-
-	return DefaultDropPolicy, errInvalidDropPolicyString
 }

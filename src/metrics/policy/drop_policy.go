@@ -76,3 +76,36 @@ func (p DropPolicy) IsValid() bool {
 func ValidDropPolicies() []DropPolicy {
 	return append([]DropPolicy(nil), validDropPolicies...)
 }
+
+// UnmarshalText unmarshals a drop policy value from a string.
+func (p *DropPolicy) UnmarshalText(data []byte) error {
+	str := string(data)
+	// Allow default string value (not specified) to mean default
+	if str == "" {
+		*p = DefaultDropPolicy
+		return nil
+	}
+
+	parsed, err := ParseDropPolicy(str)
+	if err != nil {
+		return err
+	}
+
+	*p = parsed
+	return nil
+}
+
+func (p DropPolicy) MarshalText() ([]byte, error) {
+	return []byte(p.String()), nil
+}
+
+// ParseDropPolicy parses a drop policy.
+func ParseDropPolicy(str string) (DropPolicy, error) {
+	for _, valid := range validDropPolicies {
+		if valid.String() == str {
+			return valid, nil
+		}
+	}
+
+	return DefaultDropPolicy, errInvalidDropPolicyString
+}
