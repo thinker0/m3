@@ -18,8 +18,8 @@ If you run into any issues with the upgrade or need to downgrade to a previous v
 4. Turn the node back on.
 
 
-## Bug Fixes
-- FIX **m3aggregator:** Make YAML serialization roundtrip for config related types (#PR_NUMBER)
+## Features
+- **m3aggregator:** Make YAML serialization roundtrip for config related types (#1864)
 
 # 0.10.2
 

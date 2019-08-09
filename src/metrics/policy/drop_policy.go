@@ -78,6 +78,7 @@ func ValidDropPolicies() []DropPolicy {
 }
 
 // UnmarshalText unmarshals a drop policy value from a string.
+// Empty string defaults to DefaultDropPolicy.
 func (p *DropPolicy) UnmarshalText(data []byte) error {
 	str := string(data)
 	// Allow default string value (not specified) to mean default

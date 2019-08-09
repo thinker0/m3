@@ -119,6 +119,7 @@ func (t *Type) FromProto(pb transformationpb.TransformationType) error {
 	return nil
 }
 
+// UnmarshalText extracts this type from the textual representation
 func (t *Type) UnmarshalText(text []byte) error {
 	parsed, err := ParseType(string(text))
 	if err != nil {
@@ -128,6 +129,7 @@ func (t *Type) UnmarshalText(text []byte) error {
 	return nil
 }
 
+// MarshalText serializes this type to its textual representation.
 func (t Type) MarshalText() (text []byte, err error) {
 	if !t.IsValid() {
 		return nil, fmt.Errorf("invalid aggregation type %s", t.String())
