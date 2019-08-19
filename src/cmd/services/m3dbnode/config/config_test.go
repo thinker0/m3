@@ -658,6 +658,7 @@ func TestConfiguration(t *testing.T) {
   limits:
     maxOutstandingWriteRequests: 0
     maxOutstandingReadRequests: 0
+    maxOutstandingRepairedBytes: 0
 coordinator: null
 `
 
